@@ -14,8 +14,13 @@ const (
    password = "pdok_owner"
    dbname   = "pdok"
 )
+
+const (
+   sqlSelect = "SELECT feature_type, feature_id FROM extract_wijkenbuurten2013.delta_data"
+   sqlSequenceScan  = "set enable_seqscan = off"
+)
 func main() {
-   fmt.Println("It is working")
+
 
    var f1 = feature{"Iets", "id", time.Now(), "", ""}
    var f2 = feature{"Iets", "id", time.Now(), "", ""}
@@ -25,7 +30,9 @@ func main() {
    checkError(error)
    defer db.Close()
 
-   rows, error := db.Query("SELECT feature_type, feature_id FROM extract_wijkenbuurten2013.delta_data")
+
+   db.Exec(sqlSequenceScan)
+   rows, error := db.Query(sqlSelect)
    checkError(error)
 
    for rows.Next() {
