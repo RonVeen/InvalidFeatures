@@ -5,6 +5,8 @@ import (
    "database/sql"
    "time"
    _ "github.com/lib/pq"
+   "github.com/russolsen/transit"
+   "reflect"
 )
 
 const (
@@ -53,7 +55,7 @@ func main() {
       err := rows.Scan(&collection, &featureId, &validity, &action, &attributes)
       checkError(err)
 
-      fmt.Printf("Value: %s => %s\n", collection, featureId)
+      // fmt.Printf("Value: %s => %s\n", collection, featureId)
       feature := NewFeature(collection, featureId, validity, action, attributes)
 
       if firstTime {
@@ -77,8 +79,42 @@ func main() {
 
 
 func processFeatures(features []feature) {
-   fmt.Printf("There are %d elements", len(features))
+   for _, f := range features  {
+      readTransit(f.attributes)
+   }
 
+}
+
+
+func readTransit(data string) interface{} {
+   text, err := transit.DecodeFromString(data)
+   checkError(err)
+
+   p := text.(map[interface{}]interface{})
+
+   for key, val := range p {
+      if key == "eindRegistratie" {
+         // fmt.Printf("%s ==> %s\n", key, val)
+         tagged := val.(transit.TaggedValue)
+         taggedType := reflect.TypeOf(tagged.Value).String()
+         var res = ""
+
+         switch taggedType {
+         case "string":
+            res = "X"
+         case "int64":
+            vtc := tagged.Value
+            t := time.Unix(vtc.(int64), 0)
+            fmt.Print(t)
+            res = "I"
+         }
+
+         fmt.Printf("%s TYPE %s -> %s\n", tagged, taggedType, res)
+      }
+
+   }
+
+   return text
 }
 
 
