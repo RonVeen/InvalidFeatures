@@ -23,3 +23,7 @@ type featureInfo struct {
 	before, after, invalidBefore, invalidAfter int
 
 }
+
+func NewFeature(collection, featureId string, validity time.Time, action, attributes string) *feature {
+	return &feature{collection, featureId, validity, action, attributes}
+}
